@@ -1,10 +1,14 @@
 import java.util.*;
+import java.math.*;
 
 public class State implements Comparable<State>
 {
 	private int f, h, g;
 	private State father;
 	private int totalTime;
+	private ArrayList<Integer> InitialSide = new ArrayList<>();
+	private ArrayList<Integer> FinalSide = new ArrayList<>();
+	private boolean lantern;	// if false then lantern is on the initial side.
 	
 	//constructor - fill with arguments if necessary
 	public State() 
@@ -20,8 +24,18 @@ public class State implements Comparable<State>
 	public State(State s)
 	{
 		// create a state similar with s...
+		this.f = s.f;
+		this.h = s.h;
+		this.g = s.g;
+		this.father = s.father;
+		this.totalTime = s.totalTime;
+		this.lantern = s.lantern;
+		this.InitialSide = new ArrayList<>(s.InitialSide);
+		this.FinalSide = new ArrayList<>(s.FinalSide);
 	}
-	
+
+
+	//  -----------------------------------------
 	public int getF() 
 	{
 		return this.f;
@@ -71,20 +85,122 @@ public class State implements Comparable<State>
 	{
 		this.totalTime = time;
 	}
+	public boolean getLantern(){return this.lantern;}
+	public void setLantern(boolean lat){this.lantern = lat;}
+
+	public ArrayList<Integer> getFinalSide() {
+		return FinalSide;
+	}
+
+	public ArrayList<Integer> getInitialSide() {
+		return InitialSide;
+	}
+
+	public void setFinalSide(ArrayList<Integer> finalSide) {
+		this.FinalSide = finalSide;
+	}
+
+	public void setInitialSide(ArrayList<Integer> initialSide) {
+		this.InitialSide = initialSide;
+	}
+	// ----------------------------------------
 	
-	public void evaluate() 
+	public void evaluate()
 	{
 		//calculate f...
+		heuristic();
+		setF(getH()+getG());
+
+	}
+
+
+
+	// Heuristic function adding the time needed for pairs to pass the bridge
+	// (without calculating that someone has to go back to the start with the lantern).
+	public void heuristic(){
+		Collections.sort(InitialSide);
+		int len = InitialSide.size();
+
+		for (int i=0; i <= (len/2)-1; i+=2){
+			h += InitialSide.get(len-1-i);
+		}
+		if (len % 2 == 1 ){
+			h += InitialSide.get(0);
+		}
 	}
 	
-	public void print() {}
+	public void print() {
+		System.out.print("Initial Side: ");
+		for (int i : this.InitialSide){
+			System.out.print(i+",");
+		}
+		System.out.println();
+		System.out.print("Final Side: ");
+		for (int i : this.FinalSide){
+			System.out.print(i+",");
+		}
+		System.out.println();
+		System.out.print("Lantern Side: ");
+		if (this.lantern){
+			System.out.println("Final");
+		}
+		else {System.out.println("Initial");}
+		System.out.println("F(n) = "+ getF());
+		System.out.println("-----------------------------------");
+		System.out.println();
+
+	}
 	
-	public ArrayList<State> getChildren() {return null;}
+	public ArrayList<State> getChildren() {
+		ArrayList<State> children = new ArrayList<>();
+
+		if (!lantern){
+			System.out.print("MPIKEEEEEEEE");
+			for (int i = 0; i < InitialSide.size()-1; i++ ){
+				for (int j = i; j < InitialSide.size()-1; j++){
+					State child = new State(this);
+					child.setG(this.g + Math.max(InitialSide.get(i), InitialSide.get(j)));
+					child.setTotalTime(Math.max(InitialSide.get(i), InitialSide.get(j)) + this.getTotalTime());
+					child.lantern = !lantern;
+					child.FinalSide.add(child.InitialSide.remove(i));
+					child.FinalSide.add(child.InitialSide.remove(j));
+					child.evaluate();
+					children.add(child);
+				}
+			}
+		}
+		else{
+			for (int i = 0; i <= FinalSide.size()-1; i++){
+				State child = new State(this);
+				child.setG(this.g + FinalSide.get(i));
+				child.lantern = !lantern;
+
+				child.InitialSide.add(child.FinalSide.remove(i));
+				child.evaluate();
+				children.add(child);
+			}
+		}
+		System.out.println(children.size());
+		return children;
+	}
 	
-	public boolean isFinal() {return true;}
+	public boolean isFinal() {
+		return InitialSide.isEmpty();
+	}
 	
 	@Override
-	public boolean equals(Object obj) {return true;}
+	public boolean equals(Object o) {
+		State s = (State) o;
+		if( this.lantern == s.lantern ){
+			for(int person : this.InitialSide){
+				if (!s.InitialSide.contains(person)){
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 	
 	@Override
     public int hashCode() {return 0;}
