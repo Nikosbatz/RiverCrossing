@@ -13,7 +13,7 @@ public class app {
         int persons = 5;
         ArrayList<Integer> arr = new ArrayList<>();
         arr.add(12);
-        arr.add(8);
+        //arr.add(8);
         arr.add(6);
         arr.add(3);
         arr.add(1);
@@ -26,6 +26,13 @@ public class app {
         SpaceSearch spaceSearch = new SpaceSearch();
         State finalState = spaceSearch.aStar(init);
         System.out.println(finalState);
+
+        while (finalState.getFather() != null){
+            finalState.print();
+            finalState = finalState.getFather();
+        }
+
+
 
 
 

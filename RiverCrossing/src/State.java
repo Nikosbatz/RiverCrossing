@@ -4,6 +4,7 @@ import java.math.*;
 public class State implements Comparable<State>
 {
 	private int f, h, g;
+	private int prevG;
 	private State father;
 	private int totalTime;
 	private ArrayList<Integer> InitialSide = new ArrayList<>();
@@ -120,14 +121,21 @@ public class State implements Comparable<State>
 	public void heuristic(){
 		Collections.sort(InitialSide);
 		int len = InitialSide.size();
+		h = 0;
 
-		for (int i=0; i <= (len/2)-1; i+=2){
-			h += InitialSide.get(len-1-i);
+		for (int i=0; i <= (len/2)-1; i+=1){
+			// adds the time of the slowest person per pair. E.g: [12,6,3,1] -> h = 12 + 3. 12,6 and 3,1 are pairs here.
+			h += InitialSide.get(len-1-(i*2));
+
 		}
 		if (len % 2 == 1 ){
 			h += InitialSide.get(0);
 		}
+		if(this.lantern){
+			h += Collections.min(FinalSide);
+		}
 	}
+
 	
 	public void print() {
 		System.out.print("Initial Side: ");
@@ -145,7 +153,8 @@ public class State implements Comparable<State>
 			System.out.println("Final");
 		}
 		else {System.out.println("Initial");}
-		System.out.println("F(n) = "+ getF());
+		System.out.println("F(n) = "+getG()+"+"+getH());
+		System.out.println(this.getTotalTime());
 		System.out.println("-----------------------------------");
 		System.out.println();
 
@@ -153,34 +162,41 @@ public class State implements Comparable<State>
 	
 	public ArrayList<State> getChildren() {
 		ArrayList<State> children = new ArrayList<>();
+		Collections.sort(InitialSide);
 
 		if (!lantern){
-			System.out.print("MPIKEEEEEEEE");
+
 			for (int i = 0; i < InitialSide.size()-1; i++ ){
 				for (int j = i; j < InitialSide.size()-1; j++){
 					State child = new State(this);
-					child.setG(this.g + Math.max(InitialSide.get(i), InitialSide.get(j)));
+					child.setFather(this);
+					//child.prevG  = InitialSide.get(j);
+					child.setG(this.getG() + Math.max(InitialSide.get(i), InitialSide.get(j)));
 					child.setTotalTime(Math.max(InitialSide.get(i), InitialSide.get(j)) + this.getTotalTime());
 					child.lantern = !lantern;
 					child.FinalSide.add(child.InitialSide.remove(i));
 					child.FinalSide.add(child.InitialSide.remove(j));
 					child.evaluate();
 					children.add(child);
+
 				}
 			}
 		}
 		else{
 			for (int i = 0; i <= FinalSide.size()-1; i++){
 				State child = new State(this);
-				child.setG(this.g + FinalSide.get(i));
+				child.setFather(this);
+				//child.prevG  = FinalSide.get(i);
+				child.setTotalTime(this.totalTime + FinalSide.get(i));
+				child.setG(this.getG() + FinalSide.get(i));
 				child.lantern = !lantern;
 
 				child.InitialSide.add(child.FinalSide.remove(i));
 				child.evaluate();
 				children.add(child);
+
 			}
 		}
-		System.out.println(children.size());
 		return children;
 	}
 	
@@ -191,15 +207,18 @@ public class State implements Comparable<State>
 	@Override
 	public boolean equals(Object o) {
 		State s = (State) o;
-		if( this.lantern == s.lantern ){
-			for(int person : this.InitialSide){
+		//if( this.lantern == s.lantern ){
+			/*for(int person : this.InitialSide){
 				if (!s.InitialSide.contains(person)){
 					return false;
 				}
 			}
-			return true;
-		}
-		return false;
+			return true;*/
+
+
+		//}
+		//return false;
+		return s.InitialSide.equals(this.InitialSide);
 	}
 	
 	@Override

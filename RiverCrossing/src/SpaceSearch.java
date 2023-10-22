@@ -8,9 +8,9 @@ public class SpaceSearch {
         frontier.add(initState);
         while(!frontier.isEmpty()){
             currentState = frontier.remove(0);
-            currentState.print();
             if(currentState.isFinal()) {return currentState;}
             if(!closedSet.contains(currentState)) {
+
                 closedSet.add(currentState);
                 frontier.addAll(currentState.getChildren());
                 Collections.sort(this.frontier);
