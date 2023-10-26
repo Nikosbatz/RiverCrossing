@@ -142,6 +142,7 @@ public class State implements Comparable<State>
 		for (int i : this.InitialSide){
 			System.out.print(i+",");
 		}
+		System.out.print("|"+InitialSide.size());
 		System.out.println();
 		System.out.print("Final Side: ");
 		for (int i : this.FinalSide){
@@ -153,7 +154,7 @@ public class State implements Comparable<State>
 			System.out.println("Final");
 		}
 		else {System.out.println("Initial");}
-		System.out.println("F(n) = "+getG()+"+"+getH());
+		System.out.println("F(n) = "+getF()+"="+getG()+"+"+getH());
 		System.out.println(this.getTotalTime());
 		System.out.println("-----------------------------------");
 		System.out.println();
@@ -166,16 +167,20 @@ public class State implements Comparable<State>
 
 		if (!lantern){
 
-			for (int i = 0; i < InitialSide.size()-1; i++ ){
-				for (int j = i; j < InitialSide.size()-1; j++){
+			for (int i = 0; i < InitialSide.size(); i++ ){
+				for (int j = i+1; j < InitialSide.size(); j++){
 					State child = new State(this);
 					child.setFather(this);
-					//child.prevG  = InitialSide.get(j);
 					child.setG(this.getG() + Math.max(InitialSide.get(i), InitialSide.get(j)));
 					child.setTotalTime(Math.max(InitialSide.get(i), InitialSide.get(j)) + this.getTotalTime());
 					child.lantern = !lantern;
-					child.FinalSide.add(child.InitialSide.remove(i));
-					child.FinalSide.add(child.InitialSide.remove(j));
+
+					int iPerson = child.InitialSide.get(i);
+					int jPerson = child.InitialSide.get(j);
+					child.FinalSide.add(iPerson);
+					child.FinalSide.add(jPerson);
+					child.InitialSide.remove(Integer.valueOf(iPerson));
+					child.InitialSide.remove(Integer.valueOf(jPerson));
 					child.evaluate();
 					children.add(child);
 
@@ -183,10 +188,10 @@ public class State implements Comparable<State>
 			}
 		}
 		else{
+
 			for (int i = 0; i <= FinalSide.size()-1; i++){
 				State child = new State(this);
 				child.setFather(this);
-				//child.prevG  = FinalSide.get(i);
 				child.setTotalTime(this.totalTime + FinalSide.get(i));
 				child.setG(this.getG() + FinalSide.get(i));
 				child.lantern = !lantern;
@@ -207,18 +212,7 @@ public class State implements Comparable<State>
 	@Override
 	public boolean equals(Object o) {
 		State s = (State) o;
-		//if( this.lantern == s.lantern ){
-			/*for(int person : this.InitialSide){
-				if (!s.InitialSide.contains(person)){
-					return false;
-				}
-			}
-			return true;*/
-
-
-		//}
-		//return false;
-		return s.InitialSide.equals(this.InitialSide);
+		return (s.InitialSide.equals(this.InitialSide) && s.getLantern() == this.getLantern());
 	}
 	
 	@Override
