@@ -1,10 +1,9 @@
 import java.util.*;
-import java.math.*;
+
 
 public class State implements Comparable<State>
 {
 	private int f, h, g;
-	private int prevG;
 	private State father;
 	private int totalTime;
 	private ArrayList<Integer> InitialSide = new ArrayList<>();
@@ -154,8 +153,7 @@ public class State implements Comparable<State>
 			System.out.println("Final");
 		}
 		else {System.out.println("Initial");}
-		System.out.println("F(n) = "+getF()+"="+getG()+"+"+getH());
-		System.out.println(this.getTotalTime());
+		System.out.println(this.getTotalTime() + " minutes passed.");
 		System.out.println("-----------------------------------");
 		System.out.println();
 
